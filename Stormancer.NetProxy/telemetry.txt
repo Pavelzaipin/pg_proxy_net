@@ -1,0 +1,63 @@
+﻿
+https://www.postgresql.org/docs/current/protocol-overview.html#PROTOCOL-FORMAT-CODES
+
+
+https://www.envoyproxy.io/docs/envoy/latest/configuration/listeners/network_filters/postgres_proxy_filter
+https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_protocols/postgres#arch-overview-postgres
+https://github.com/npgsql/npgsql/blob/main/src/Npgsql/BackendMessages/ErrorOrNoticeMessage.cs
+https://github.com/npgsql/npgsql/tree/main/src/Npgsql.OpenTelemetry
+https://www.npgsql.org/doc/diagnostics/tracing.html
+
+
+
+
+But it's been around for 5 years. 
+First as opentracing (actually thanks Ben and LightStep!), 
+then google decided to compete with opencensus (no thanks google), 
+and now we have opentelemetry.
+OpenTracing dealt only with Tracing, 
+it didn't care about logs or metrics. 
+OpenCensus did all 3.
+
+https://opencensus.io/
+https://devblogs.microsoft.com/dotnet/opentelemetry-net-reaches-v1-0/
+https://opentelemetry.io/docs/instrumentation/net/getting-started/
+https://opentelemetry.io/docs/instrumentation/js/getting-started/nodejs/
+https://opentelemetry.io/docs/instrumentation/python/
+https://opentelemetry.io/docs/collector/
+https://opentelemetry.io/docs/collector/getting-started/
+https://opentelemetry.io/docs/collector/configuration/
+https://github.com/open-telemetry/opentelemetry-collector
+https://github.com/open-telemetry/opentelemetry-dotnet
+https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md
+https://open-telemetry.github.io/opentelemetry-python/getting-started.html
+https://en.wikipedia.org/wiki/Telemetry
+https://logz.io/learn/opentelemetry-guide/
+https://logz.io/learn/opentelemetry-guide/#collector
+https://logz.io/blog/csharp-dotnet-opentelemetry-instrumentation/
+https://github.com/benbhall/jaeger-opentelemetry-dotnet
+https://lightstep.com/opentelemetry/net
+https://lightstep.com/opentelemetry/js
+https://www.meziantou.net/monitoring-a-dotnet-application-using-opentelemetry.htm
+https://www.logicmonitor.com/blog/what-is-an-otel-collector
+https://github.com/seungyongshim/SeungYongShim.Proto.Actor
+https://github.com/rgl/opentelemetry-grafana-playground
+https://github.com/mrblonde91/otlp-datadog
+https://github.com/ardacetinkaya/opentelemetry-aspnet-demo
+https://github.com/luizhlelis/dotnet-trace-context
+https://github.com/dasiths/OpenTelemetryDistributedTracingSample
+https://github.com/itn3000/OpenTelemetry.Collector.EventSource
+https://github.com/open-telemetry/opentelemetry-dotnet-contrib
+https://github.com/open-telemetry/opentelemetry-js
+https://github.com/open-telemetry/opentelemetry-collector-contrib
+
+
+
+Zipkin: Distributed tracing system:
+https://zipkin.io/
+https://www.jaegertracing.io/
+https://gitter.im/open-telemetry/opentelemetry-dotnet?at=5e457cb437545d247d38e979
+https://stackoverflow.com/questions/68302224/opentelemetry-exporting-to-collector-contrib
+
+https://github.com/topics/opentelemetry?l=c%23&o=asc&s=forks
+https://medium.com/codex/c-is-dying-fa21a96107c5
