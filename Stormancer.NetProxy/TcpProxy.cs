@@ -20,28 +20,28 @@ namespace NetProxy
 
         public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp)
         {
-            var connections = new ConcurrentBag<TcpConnection>();
+            ConcurrentBag<TcpConnection>? connections = new ConcurrentBag<TcpConnection>();
 
             IPAddress localIpAddress = string.IsNullOrEmpty(localIp) ? IPAddress.IPv6Any : IPAddress.Parse(localIp);
-            var localServer = new TcpListener(new IPEndPoint(localIpAddress, localPort));
+            TcpListener? localServer = new TcpListener(new IPEndPoint(localIpAddress, localPort));
             localServer.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
             localServer.Start();
 
             Console.WriteLine($"TCP proxy started [{localIpAddress}]:{localPort} -> [{remoteServerHostNameOrAddress}]:{remoteServerPort}");
 
-            var _ = Task.Run(async () =>
+            Task? _ = Task.Run(async () =>
             {
                 while (true)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
 
-                    var tempConnections = new List<TcpConnection>(connections.Count);
-                    while (connections.TryTake(out var connection))
+                    List<TcpConnection>? tempConnections = new List<TcpConnection>(connections.Count);
+                    while (connections.TryTake(out TcpConnection? connection))
                     {
                         tempConnections.Add(connection);
                     }
 
-                    foreach (var tcpConnection in tempConnections)
+                    foreach (TcpConnection? tcpConnection in tempConnections)
                     {
                         if (tcpConnection.LastActivity + ConnectionTimeout < Environment.TickCount64)
                         {
@@ -59,9 +59,9 @@ namespace NetProxy
             {
                 try
                 {
-                    var ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);
+                    IPAddress[]? ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);
 
-                    var tcpConnection = await TcpConnection.AcceptTcpClientAsync(localServer,
+                    TcpConnection? tcpConnection = await TcpConnection.AcceptTcpClientAsync(localServer,
                             new IPEndPoint(ips[0], remoteServerPort))
                         .ConfigureAwait(false);
                     tcpConnection.Run();
@@ -92,7 +92,7 @@ namespace NetProxy
 
         public static async Task<TcpConnection> AcceptTcpClientAsync(TcpListener tcpListener, IPEndPoint remoteEndpoint)
         {
-            var localServerConnection = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
+            TcpClient? localServerConnection = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
             localServerConnection.NoDelay = true;
             return new TcpConnection(localServerConnection, remoteEndpoint);
         }
@@ -139,8 +139,8 @@ namespace NetProxy
 
                         Console.WriteLine($"Established TCP {_sourceEndpoint} => {_serverLocalEndpoint} => {_forwardLocalEndpoint} => {_remoteEndpoint}");
 
-                        using (var serverStream = _forwardClient.GetStream())
-                        using (var clientStream = _localServerConnection.GetStream())
+                        using (NetworkStream? serverStream = _forwardClient.GetStream())
+                        using (NetworkStream? clientStream = _localServerConnection.GetStream())
                         using (cancellationToken.Register(() =>
                         {
                             serverStream.Close();
@@ -148,8 +148,8 @@ namespace NetProxy
                         }, true))
                         {
                             await Task.WhenAny(
-                                CopyToAsync(clientStream, serverStream, 81920, Direction.Forward, cancellationToken),
-                                CopyToAsync(serverStream, clientStream, 81920, Direction.Responding, cancellationToken)
+                                CopyToAsync(clientStream, serverStream, true, 81920, Direction.Forward, cancellationToken),
+                                CopyToAsync(serverStream, clientStream, false, 81920, Direction.Responding, cancellationToken)
                             ).ConfigureAwait(false);
                         }
                     }
@@ -165,7 +165,7 @@ namespace NetProxy
             });
         }
 
-        private async Task CopyToAsync(Stream source, Stream destination, int bufferSize = 81920, Direction direction = Direction.Unknown, CancellationToken cancellationToken = default)
+        private async Task CopyToAsync(Stream source, Stream destination, bool log, int bufferSize = 81920, Direction direction = Direction.Unknown, CancellationToken cancellationToken = default)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
@@ -173,7 +173,35 @@ namespace NetProxy
                 while (true)
                 {
                     int bytesRead = await source.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false);
-                    if (bytesRead == 0) break;
+                    if (bytesRead == 0) 
+                        break;
+
+                    if (log)
+                    {
+                        string? message = System.Text.Encoding.UTF8.GetString(buffer);
+                        message = message.Replace("��4", "");
+                        string[] statements = message.Split('\0', System.StringSplitOptions.RemoveEmptyEntries);
+
+                        if (statements.Length > 1 && "Q".Equals(statements[0]))
+                        {
+                            if (
+                                // On connection 
+                                statements[1].IndexOf("SET DateStyle=ISO") == -1 &&
+                                statements[1].IndexOf("SET client_min_messages=notice") == -1 &&
+                                statements[1].IndexOf("SET bytea_output=escape") == -1 &&
+                                statements[1].IndexOf("SELECT oid, pg_encoding_to_char(encoding) AS encoding, datlastsysoid") == -1 &&
+                                statements[1].IndexOf("set client_encoding to 'UNICODE'") == -1 &&
+                                // Show results in pgadmin3 
+                                statements[1].IndexOf("as typname FROM pg_type") == -1 &&
+                                statements[1].IndexOf("CASE WHEN typbasetype=0 THEN oid else typbasetype END AS basetype") == -1
+                            )
+                                System.Console.WriteLine(statements[1].Substring(1));
+                        } // End if (statements.Length > 1 && "Q".Equals(statements[0])) 
+
+                        // message = message.Replace("\0", "!ARGH!");
+                        // System.Console.WriteLine(foo);
+                    } // End if (log) 
+
                     LastActivity = Environment.TickCount64;
                     await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
 

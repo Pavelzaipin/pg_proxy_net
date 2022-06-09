@@ -1,62 +1,77 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace NetProxy
 {
+
+
     internal static class Program
     {
+
+
         private static void Main(string[] args)
         {
             try
             {
-                var configJson = System.IO.File.ReadAllText("config.json");
-                Dictionary<string, ProxyConfig>? configs = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, ProxyConfig>>(configJson);
+                string? configJson = System.IO.File.ReadAllText("config.json");
+                System.Collections.Generic.Dictionary<string, ProxyConfig>? configs = System.Text.Json.JsonSerializer
+                    .Deserialize<System.Collections.Generic.Dictionary<string, ProxyConfig>>(configJson);
+
                 if (configs == null)
                 {
-                    throw new Exception("configs is null");
+                    throw new System.Exception("configs is null");
                 }
 
-                var tasks = configs.SelectMany(c => ProxyFromConfig(c.Key, c.Value));
-                Task.WhenAll(tasks).Wait();
+
+                System.Collections.Generic.List<System.Threading.Tasks.Task> tasks = 
+                    new System.Collections.Generic.List<System.Threading.Tasks.Task>();
+
+                foreach (System.Collections.Generic.KeyValuePair<string, ProxyConfig> kvp in configs)
+                {
+                    foreach (System.Threading.Tasks.Task? x in ProxyFromConfig(kvp.Key, kvp.Value))
+                    {
+                        tasks.Add(x);
+                    }
+                }
+
+                System.Threading.Tasks.Task.WhenAll(tasks).Wait();
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                Console.WriteLine($"An error occurred : {ex}");
+                System.Console.WriteLine($"An error occurred : {ex}");
             }
         }
 
-        private static IEnumerable<Task> ProxyFromConfig(string proxyName, ProxyConfig proxyConfig)
+
+        private static System.Collections.Generic.IEnumerable<System.Threading.Tasks.Task> 
+            ProxyFromConfig(string proxyName, ProxyConfig proxyConfig)
         {
-            var forwardPort = proxyConfig.forwardPort;
-            var localPort = proxyConfig.localPort;
-            var forwardIp = proxyConfig.forwardIp;
-            var localIp = proxyConfig.localIp;
-            var protocol = proxyConfig.protocol;
+            ushort? forwardPort = proxyConfig.forwardPort;
+            ushort? localPort = proxyConfig.localPort;
+            string? forwardIp = proxyConfig.forwardIp;
+            string? localIp = proxyConfig.localIp;
+            string? protocol = proxyConfig.protocol;
             try
             {
                 if (forwardIp == null)
                 {
-                    throw new Exception("forwardIp is null");
+                    throw new System.Exception("forwardIp is null");
                 }
                 if (!forwardPort.HasValue)
                 {
-                    throw new Exception("forwardPort is null");
+                    throw new System.Exception("forwardPort is null");
                 }
                 if (!localPort.HasValue)
                 {
-                    throw new Exception("localPort is null");
+                    throw new System.Exception("localPort is null");
                 }
                 if (protocol != "udp" && protocol != "tcp" && protocol != "any")
                 {
-                    throw new Exception($"protocol is not supported {protocol}");
+                    throw new System.Exception($"protocol is not supported {protocol}");
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
+                System.Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
                 throw;
             }
 
@@ -64,15 +79,15 @@ namespace NetProxy
             if (protocol == "udp" || protocol == "any")
             {
                 protocolHandled = true;
-                Task task;
+                System.Threading.Tasks.Task task;
                 try
                 {
-                    var proxy = new UdpProxy();
+                    UdpProxy proxy = new UdpProxy();
                     task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
                 }
-                catch (Exception ex)
+                catch (System.Exception ex)
                 {
-                    Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
+                    System.Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
                     throw;
                 }
 
@@ -82,15 +97,15 @@ namespace NetProxy
             if (protocol == "tcp" || protocol == "any")
             {
                 protocolHandled = true;
-                Task task;
+                System.Threading.Tasks.Task task;
                 try
                 {
-                    var proxy = new TcpProxy();
+                    TcpProxy? proxy = new TcpProxy();
                     task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
                 }
-                catch (Exception ex)
+                catch (System.Exception ex)
                 {
-                    Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
+                    System.Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
                     throw;
                 }
 
@@ -99,10 +114,11 @@ namespace NetProxy
 
             if (!protocolHandled)
             {
-                throw new InvalidOperationException($"protocol not supported {protocol}");
+                throw new System.InvalidOperationException($"protocol not supported {protocol}");
             }
         }
     }
+
 
     public class ProxyConfig
     {
@@ -113,8 +129,11 @@ namespace NetProxy
         public ushort? forwardPort { get; set; }
     }
 
+
     internal interface IProxy
     {
-        Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null);
+        System.Threading.Tasks.Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null);
     }
+
+
 }

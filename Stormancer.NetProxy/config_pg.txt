@@ -1,0 +1,62 @@
+﻿
+https://chartio.com/resources/tutorials/how-to-log-queries-in-postgresql/
+https://tableplus.com/blog/2018/10/how-to-show-queries-log-in-postgresql.html
+
+https://dba.stackexchange.com/questions/280464/check-history-along-with-dates-for-queries-in-postgres
+
+
+
+https://www.postgresql.org/docs/8.4/pgstatstatements.html
+https://www.postgresql.org/docs/current/pgstatstatements.html
+https://www.postgresql.org/docs/9.3/runtime-config-logging.html
+
+
+https://www.quora.com/What-is-the-PostgreSQL-equivalent-of-SQL-Server-Profiler?share=1
+https://wiki.postgresql.org/wiki/Introduction_to_VACUUM,_ANALYZE,_EXPLAIN,_and_COUNT
+https://www.postgresql.org/docs/9.4/using-explain.html
+https://www.postgresql.org/docs/9.1/sql-analyze.html
+
+
+
+
+
+https://stackoverflow.com/questions/2430380/is-there-a-postgresql-equivalent-of-sql-server-profiler
+https://stackoverflow.com/questions/50803147/what-is-the-timeframe-for-pg-stat-statements13:22 09.06.2022
+https://stackoverflow.com/questions/28147037/pghero-on-postgresapp-pg-stat-statements-must-be-loaded-via-shared-preload-libra
+https://stackoverflow.com/questions/51566728/is-there-any-way-to-trace-and-debug-a-query-in-postgresql
+https://wiki.postgresql.org/wiki/Profiling_with_perf
+
+
+
+CREATE EXTENSION pg_stat_statements;
+
+
+D:\Programme\LessPortableApps\SQL_PostGreSQL\PostgreSQLPortable\Data\data\postgresql.conf
+shared_preload_libraries
+
+shared_preload_libraries = 'pg_stat_statements'
+pg_stat_statements.track = all
+
+13:23 09.06.2022
+
+
+SELECT datname,procpid,current_query FROM pg_stat_activity;
+
+
+https://github.com/Stormancer/netproxy
+https://web.archive.org/web/20120329222856/http://msdn.microsoft.com/en-gb/magazine/cc300743.aspx
+
+Since a proxy auto-config file is just a JavaScript source file, 
+and you need to call a method in it, you could use the JScript .NET compiler 
+(available in code via the JScriptCodeProvider) and/or interpreter (via JScriptEvaluate).
+ You would need to append a line at the end that calls FindProxyForURL with
+
+https://odetocode.com/articles/80.aspx
+https://weblog.west-wind.com/posts/2007/Feb/14/Evaluating-JavaScript-code-from-C
+https://www.codeproject.com/Articles/12168/Using-PAC-files-proxy
+
+
+D:\Stefan.Steiger\Documents\Visual Studio 2017\Projects\TestPWA\TestPWA\Code\Uri\InfoExtraction.cs
+https://github.com/sebastienros/jint
+https://andrewlock.net/running-javascript-in-a-dotnet-app-with-javascriptengineswitcher/
+https://dev.to/web-atoms/introducing-new-javascript-engine-yantrajs-for-dotnet-49h0
