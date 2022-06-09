@@ -60,3 +60,72 @@ D:\Stefan.Steiger\Documents\Visual Studio 2017\Projects\TestPWA\TestPWA\Code\Uri
 https://github.com/sebastienros/jint
 https://andrewlock.net/running-javascript-in-a-dotnet-app-with-javascriptengineswitcher/
 https://dev.to/web-atoms/introducing-new-javascript-engine-yantrajs-for-dotnet-49h0
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT t.oid, t.xmin, t.*, relname, CASE WHEN relkind = 'r' THEN TRUE ELSE FALSE END AS parentistable,   nspname, des.description, l.lanname, p.prosrc,
+  COALESCE(substring(pg_get_triggerdef(t.oid), 'WHEN (.*) EXECUTE PROCEDURE'), substring(pg_get_triggerdef(t.oid), 'WHEN (.*)  \$trigger')) AS whenclause
+  FROM pg_trigger t
+  JOIN pg_class cl ON cl.oid=tgrelid
+  JOIN pg_namespace na ON na.oid=relnamespace
+  LEFT OUTER JOIN pg_description des ON (des.objoid=t.oid AND des.classoid='pg_trigger'::regclass)
+  LEFT OUTER JOIN pg_proc p ON p.oid=t.tgfoid
+  LEFT OUTER JOIN pg_language l ON l.oid=p.prolang
+ WHERE NOT tgisinternal
+  AND tgrelid = 38984::oid
+ ORDER BY tgname
+
+
+
+ SELECT rw.oid, rw.*, relname, CASE WHEN relkind = 'r' THEN TRUE ELSE FALSE END AS parentistable, nspname, description,
+       pg_get_ruledef(rw.oid, true) AS definition
+  FROM pg_rewrite rw
+  JOIN pg_class cl ON cl.oid=rw.ev_class
+  JOIN pg_namespace nsp ON nsp.oid=cl.relnamespace
+  LEFT OUTER JOIN pg_description des ON (des.objoid=rw.oid AND des.classoid='pg_rewrite'::regclass)
+ WHERE ev_class = 38984
+ ORDER BY rw.rulename
+
+
+
+
+
+ SELECT DISTINCT ON(cls.relname) cls.oid, cls.relname as idxname, indrelid, indkey, indisclustered, indisvalid, indisunique, indisprimary, n.nspname,
+       indnatts, cls.reltablespace AS spcoid, spcname, tab.relname as tabname, indclass, con.oid AS conoid, CASE contype WHEN 'p' THEN desp.description WHEN 'u' THEN desp.description WHEN 'x' THEN desp.description ELSE des.description END AS description,
+       pg_get_expr(indpred, indrelid, true) as indconstraint, contype, condeferrable, condeferred, amname
+, substring(array_to_string(cls.reloptions, ',') from 'fillfactor=([0-9]*)') AS fillfactor
+  FROM pg_index idx
+  JOIN pg_class cls ON cls.oid=indexrelid
+  JOIN pg_class tab ON tab.oid=indrelid
+  LEFT OUTER JOIN pg_tablespace ta on ta.oid=cls.reltablespace
+  JOIN pg_namespace n ON n.oid=tab.relnamespace
+  JOIN pg_am am ON am.oid=cls.relam
+  LEFT JOIN pg_depend dep ON (dep.classid = cls.tableoid AND dep.objid = cls.oid AND dep.refobjsubid = '0' AND dep.refclassid=(SELECT oid FROM pg_class WHERE relname='pg_constraint') AND dep.deptype='i')
+  LEFT OUTER JOIN pg_constraint con ON (con.tableoid = dep.refclassid AND con.oid = dep.refobjid)
+  LEFT OUTER JOIN pg_description des ON (des.objoid=cls.oid AND des.classoid='pg_class'::regclass)
+  LEFT OUTER JOIN pg_description desp ON (desp.objoid=con.oid AND desp.objsubid = 0 AND desp.classoid='pg_constraint'::regclass)
+ WHERE indrelid = 38984::oid
+   AND conname IS NULL
+ ORDER BY cls.relname
+
+
+SELECT version()
+
+ SELECT usecreatedb, usesuper, CASE WHEN usesuper THEN pg_postmaster_start_time() ELSE NULL END as upsince, CASE WHEN usesuper THEN pg_conf_load_time() ELSE NULL END as confloadedsince, CASE WHEN usesuper THEN pg_is_in_recovery() ELSE NULL END as inrecovery, CASE WHEN usesuper THEN pg_last_xlog_receive_location() ELSE NULL END as receiveloc, CASE WHEN usesuper THEN pg_last_xlog_replay_location() ELSE NULL END as replayloc, CASE WHEN usesuper THEN pg_last_xact_replay_timestamp() ELSE NULL END as replay_timestamp, CASE WHEN usesuper AND pg_is_in_recovery() THEN pg_is_xlog_replay_paused() ELSE NULL END as isreplaypaused
+  FROM pg_user WHERE usename=current_user
+ 
+
+
+
+
+
+
