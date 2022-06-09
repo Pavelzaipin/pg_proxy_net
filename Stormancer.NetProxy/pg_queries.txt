@@ -1,0 +1,401 @@
+﻿
+
+
+https://soft-builder.com/how-to-list-triggers-in-postgresql-database/
+ERBuilder Data Modeler
+https://soft-builder.com/erbuilder-data-modeler/
+
+
+SELECT
+    db.oid as did, db.datname as name, ta.spcname as spcname, db.datallowconn,
+    pg_catalog.has_database_privilege(db.oid, 'CREATE') as cancreate, datdba as owner
+FROM
+    pg_catalog.pg_database db
+    LEFT OUTER JOIN pg_catalog.pg_tablespace ta ON db.dattablespace = ta.oid
+WHERE db.oid > 16383::OID OR db.datname IN ('postgres', 'edb')
+
+AND db.datistemplate in (false)
+
+ORDER BY datname;
+
+
+
+
+SELECT version()
+
+
+SELECT
+    db.oid as did, db.datname, db.datallowconn,
+    pg_encoding_to_char(db.encoding) AS serverencoding,
+    has_database_privilege(db.oid, 'CREATE') as cancreate,
+    datistemplate
+FROM
+    pg_catalog.pg_database db
+WHERE db.datname = current_database()
+
+        SELECT
+             gss_authenticated, encrypted
+        FROM
+            pg_catalog.pg_stat_gssapi
+        WHERE pid = pg_backend_pid()
+�
+        SELECT
+            roles.oid as id, roles.rolname as name,
+            roles.rolsuper as is_superuser,
+            CASE WHEN roles.rolsuper THEN true ELSE roles.rolcreaterole END as
+            can_create_role,
+            CASE WHEN roles.rolsuper THEN true
+            ELSE roles.rolcreatedb END as can_create_db,
+            CASE WHEN 'pg_signal_backend'=ANY(ARRAY(WITH RECURSIVE cte AS (
+            SELECT pg_roles.oid,pg_roles.rolname FROM pg_roles
+                WHERE pg_roles.oid = roles.oid
+            UNION ALL
+            SELECT m.roleid,pgr.rolname FROM cte cte_1
+                JOIN pg_auth_members m ON m.member = cte_1.oid
+                JOIN pg_roles pgr ON pgr.oid = m.roleid)
+            SELECT rolname  FROM cte)) THEN True
+            ELSE False END as can_signal_backend
+        FROM
+            pg_catalog.pg_roles as roles
+        WHERE
+            rolname = current_user
+;            
+            
+            
+            
+-- list-databases 
+
+SELECT
+    nsp.oid,
+    nsp.nspname as name,
+    pg_catalog.has_schema_privilege(nsp.oid, 'CREATE') as can_create,
+    pg_catalog.has_schema_privilege(nsp.oid, 'USAGE') as has_usage
+FROM
+    pg_catalog.pg_namespace nsp
+WHERE
+            nspname NOT LIKE 'pg!_%' escape '!' AND
+            NOT (
+(nsp.nspname = 'pg_catalog' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'pg_class' AND
+            relnamespace = nsp.oid LIMIT 1)) OR
+    (nsp.nspname = 'pgagent' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'pga_job' AND
+            relnamespace = nsp.oid LIMIT 1)) OR
+    (nsp.nspname = 'information_schema' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'tables' AND
+            relnamespace = nsp.oid LIMIT 1))
+    )
+
+    
+ORDER BY nspname;
+
+
+
+select event_object_schema as table_schema,
+       event_object_table as table_name,
+       trigger_schema,
+       trigger_name,
+       string_agg(event_manipulation, ',') as event,
+       action_timing as activation,
+       action_condition as condition,
+       action_statement as definition
+from information_schema.triggers
+group by 1,2,3,4,6,7,8
+order by table_schema,
+         table_name;
+         
+         
+
+
+
+
+
+
+
+-- List schemas 
+
+SELECT
+    nsp.nspname as schema_name,
+    (nsp.nspname = 'pg_catalog' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'pg_class' AND
+            relnamespace = nsp.oid LIMIT 1)) OR
+    (nsp.nspname = 'pgagent' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'pga_job' AND
+            relnamespace = nsp.oid LIMIT 1)) OR
+    (nsp.nspname = 'information_schema' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'tables' AND
+            relnamespace = nsp.oid LIMIT 1)) AS is_catalog,
+    CASE
+    WHEN nsp.nspname = ANY('{information_schema}')
+        THEN false
+    ELSE true END AS db_support
+FROM
+    pg_catalog.pg_namespace nsp
+WHERE
+    nsp.oid = 16494::OID;
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+-- List-tables
+    
+SELECT rel.oid, rel.relname AS name,
+    (SELECT count(*) FROM pg_catalog.pg_trigger WHERE tgrelid=rel.oid AND tgisinternal = FALSE) AS triggercount,
+    (SELECT count(*) FROM pg_catalog.pg_trigger WHERE tgrelid=rel.oid AND tgisinternal = FALSE AND tgenabled = 'O') AS has_enable_triggers,
+    (CASE WHEN rel.relkind = 'p' THEN true ELSE false END) AS is_partitioned,
+    (SELECT count(1) FROM pg_catalog.pg_inherits WHERE inhrelid=rel.oid LIMIT 1) as is_inherits,
+    (SELECT count(1) FROM pg_catalog.pg_inherits WHERE inhparent=rel.oid LIMIT 1) as is_inherited
+FROM pg_catalog.pg_class rel
+    WHERE rel.relkind IN ('r','s','t','p') AND rel.relnamespace = 16494::oid
+    AND NOT rel.relispartition
+        ORDER BY rel.relname;
+
+
+
+        -- list-sequences
+SELECT cl.oid as oid, relname as name, relnamespace as schema
+FROM pg_catalog.pg_class cl
+WHERE
+    relkind = 'S'
+    AND relnamespace = 16494::oid
+ORDER BY relname
+
+
+
+
+
+-- list-collations 
+
+SELECT c.oid, c.collname AS name
+FROM pg_catalog.pg_collation c
+WHERE c.collnamespace = 16494::oid
+ORDER BY c.collname;
+
+
+
+
+
+-- list-functions
+
+SELECT
+    pr.oid, pr.proname || '(' || COALESCE(pg_catalog.pg_get_function_identity_arguments(pr.oid), '') || ')' as name,
+    lanname, pg_catalog.pg_get_userbyid(proowner) as funcowner, description
+FROM
+    pg_catalog.pg_proc pr
+JOIN
+    pg_catalog.pg_type typ ON typ.oid=prorettype
+JOIN
+    pg_catalog.pg_language lng ON lng.oid=prolang
+LEFT OUTER JOIN
+    pg_catalog.pg_description des ON (des.objoid=pr.oid AND des.classoid='pg_proc'::regclass)
+WHERE
+   pr.prokind IN ('f', 'w')
+    AND pronamespace = 16494::oid
+    AND typname NOT IN ('trigger', 'event_trigger')
+ORDER BY
+    proname;
+
+
+    
+    
+
+            
+            
+            
+            
+ -- procedures            
+SELECT
+    pr.oid,
+    CASE WHEN
+        pg_catalog.pg_get_function_identity_arguments(pr.oid) <> ''
+    THEN
+        pr.proname || '(' || pg_catalog.pg_get_function_identity_arguments(pr.oid) || ')'
+    ELSE
+        pr.proname::text
+    END AS name,
+    lanname, pg_catalog.pg_get_userbyid(proowner) AS funcowner, description
+FROM
+    pg_catalog.pg_proc pr
+JOIN
+    pg_catalog.pg_type typ ON typ.oid=prorettype
+JOIN
+    pg_catalog.pg_language lng ON lng.oid=prolang
+LEFT OUTER JOIN
+    pg_catalog.pg_description des ON (des.objoid=pr.oid AND des.classoid='pg_proc'::regclass)
+WHERE
+    pr.prokind = 'p'::char
+    AND pronamespace = 16494::oid
+    AND typname NOT IN ('trigger', 'event_trigger')
+ORDER BY
+    proname;
+
+
+-- views
+
+
+SELECT
+    c.oid,
+    c.relname AS name
+FROM pg_catalog.pg_class c
+WHERE
+  c.relkind = 'v'
+    AND c.relnamespace = 16494::oid
+ORDER BY
+    c.relname
+
+
+    
+    
+    -- trigger-functions
+    
+    SELECT
+    pr.oid, pr.proname || '()' as name,
+    lanname, pg_catalog.pg_get_userbyid(proowner) as funcowner, description
+FROM
+    pg_catalog.pg_proc pr
+JOIN
+    pg_catalog.pg_type typ ON typ.oid=prorettype
+JOIN
+    pg_catalog.pg_language lng ON lng.oid=prolang
+LEFT OUTER JOIN
+    pg_catalog.pg_description des ON (des.objoid=pr.oid AND des.classoid='pg_proc'::regclass)
+WHERE
+    pr.prokind IN ('f', 'w')
+    AND pronamespace = 16494::oid
+    AND typname IN ('trigger', 'event_trigger')
+    AND lanname NOT IN ('edbspl', 'sql', 'internal')
+ORDER BY
+    proname;
+
+
+    
+    
+    
+-- types     
+SELECT t.oid, t.typname AS name
+FROM pg_catalog.pg_type t
+    LEFT OUTER JOIN pg_catalog.pg_type e ON e.oid=t.typelem
+    LEFT OUTER JOIN pg_catalog.pg_class ct ON ct.oid=t.typrelid AND ct.relkind <> 'c'
+    LEFT OUTER JOIN pg_catalog.pg_namespace nsp ON nsp.oid = t.typnamespace
+WHERE t.typtype != 'd' AND t.typname NOT LIKE E'\\_%' AND t.typnamespace = 16494::oid
+    AND ct.oid is NULL
+ORDER BY t.typname;
+
+-- event-triggers
+SELECT e.oid, e.evtname AS name
+FROM pg_catalog.pg_event_trigger e
+ORDER BY e.evtname
+
+
+
+
+-- extensions 
+SELECT
+    x.oid, pg_catalog.pg_get_userbyid(extowner) AS owner,
+    x.extname AS name, n.nspname AS schema,
+    x.extrelocatable AS relocatable, x.extversion AS version,
+    e.comment
+FROM
+    pg_catalog.pg_extension x
+    LEFT JOIN pg_catalog.pg_namespace n ON x.extnamespace=n.oid
+    JOIN pg_catalog.pg_available_extensions() e(name, default_version, comment) ON x.extname=e.name ORDER BY x.extname
+
+
+
+    
+    
+    
+    
+    
+    SELECT
+    nsp.oid,
+CASE nsp.nspname
+    WHEN 'pg_catalog' THEN 'PostgreSQL Catalog (pg_catalog)'
+    WHEN 'pgagent' THEN 'pgAgent Job Scheduler (pgagent)'
+    WHEN 'information_schema' THEN 'ANSI (information_schema)'
+    ELSE nsp.nspname
+    END AS name,
+    pg_catalog.has_schema_privilege(nsp.oid, 'CREATE') as can_create,
+    pg_catalog.has_schema_privilege(nsp.oid, 'USAGE') as has_usage
+FROM
+    pg_catalog.pg_namespace nsp
+WHERE
+        (
+(nsp.nspname = 'pg_catalog' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'pg_class' AND
+            relnamespace = nsp.oid LIMIT 1)) OR
+    (nsp.nspname = 'pgagent' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'pga_job' AND
+            relnamespace = nsp.oid LIMIT 1)) OR
+    (nsp.nspname = 'information_schema' AND EXISTS
+        (SELECT 1 FROM pg_catalog.pg_class WHERE relname = 'tables' AND
+            relnamespace = nsp.oid LIMIT 1))
+    )
+ORDER BY 2;
+
+
+
+
+-- triggers 
+SELECT  event_object_table AS table_name ,trigger_name         
+FROM information_schema.triggers  
+GROUP BY table_name , trigger_name 
+ORDER BY table_name ,trigger_name 
+
+
+
+
+
+-- triggers for table 
+SELECT  event_object_table AS table_name ,trigger_name         
+FROM information_schema.triggers  
+WHERE event_object_table ='your_table_name' 
+GROUP BY table_name , trigger_name 
+ORDER BY table_name ,trigger_name
+
+
+
+
+
+
+-- triggers from pg-catalogs
+select relname as table_with_trigger
+from pg_class
+where pg_class.oid in (
+        select tgrelid
+        from pg_trigger
+        )
+        
+        
+        
+SELECT tgname
+     , tgisinternal, pg_get_triggerdef(oid) AS definition  -- optional additions
+FROM   pg_trigger
+WHERE  tgrelid = 'myschema.mytbl'::regclass;  -- optionally schema-qualified
+
+
+
+
+select    tgname
+    ,relname
+    ,tgenabled
+    ,nspname    from    pg_trigger 
+    join    pg_class    on    (pg_class.oid=pg_trigger.tgrelid) 
+    join    pg_namespace    on    (nspowner=relowner);
+
+
+tgenabled (To check if its disabled)
+
+O = trigger fires in "origin" and "local" modes, 
+D = trigger is disabled, 
+R = trigger fires in "replica" mode,
+A = trigger fires always.
+
+
