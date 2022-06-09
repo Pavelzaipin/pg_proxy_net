@@ -1,7 +1,10 @@
 PG Proxy for .NET 
 ========
-pg_proxy_net is a very simple TCP proxy for PostgreSQL using .NET Core - it is based on Netproxy. <br />
-It outputs the sql statements executed by an application (up to the buffer limit of 81'920 bytes interpreted as utf8-unicode). 
+pg_proxy_net is a very simple TCP proxy for PostgreSQL using .NET Core - it is based on Netproxy.<br />
+It outputs the sql statements executed by an application (up to the buffer limit of 81'920 bytes interpreted as utf8-unicode). <br />
+It opens TCP port 6666 on the loopback interface and forwards to 127.0.0.1:5432 (PostgreSQL-default-server-port).<br />
+You now connect your application to 127.0.0.1:6666 instead of 127.0.0.1:5432, and you'll see what it is doing. <br />
+It will not work with TLS/encryption. 
 
 Netproxy is a simple ipv6/ipv4 UDP & TCP proxy based on .NET 5.0, tested on *win10-x64* and *ubuntu.16.20-x64*.
 
