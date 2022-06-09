@@ -1,10 +1,16 @@
-NetProxy
+PG Proxy for .NET 
 ========
+pg_proxy_net is a very simple TCP proxy for PostgreSQL using .NET Core - it is based on Netproxy. <br />
+It outputs the sql statements executed by an application (up to the buffer limit of 81'920 bytes interpreted as utf8-unicode). 
 
-Netproxy is a simple ipv6/ipv4 UDP & TCP proxy based on .NET 5.0.
-Tested on *win10-x64* and *ubuntu.16.20-x64*.
+Netproxy is a simple ipv6/ipv4 UDP & TCP proxy based on .NET 5.0, tested on *win10-x64* and *ubuntu.16.20-x64*.
 
 Why? 
+====
+To create an analogue to SQL-Server profiler without having to enable logging on the server. <br />
+
+
+Why NetProxy ? 
 ====
 We needed a simple, crossplatform IPV6 compatible UDP forwarder, and couldn't find a satisfying solution. 
 Nginx was obviously a great candidate but building it on Windows with UDP forwarding enabled was quite a pain.
