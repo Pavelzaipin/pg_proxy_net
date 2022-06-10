@@ -1,6 +1,11 @@
-PG Proxy for .NET 
+PG Proxy/"Profiler" for .NET 
 ========
-pg_proxy_net is a very simple TCP proxy for PostgreSQL using .NET Core - it is based on Netproxy.<br />
+pg_proxy_net is a console-based profiler for PostgreSQL. 
+It is a very simple TCP proxy for PostgreSQL 
+written using .NET Core, based on Netproxy.
+
+It is intended to be a PG analogue to Microsoft SQL-Server Profiler. 
+
 It outputs the sql statements executed by an application (up to the buffer limit of 81'920 bytes interpreted as utf8-unicode). <br />
 It opens TCP port 6666 on the loopback interface and forwards to 127.0.0.1:5432 (PostgreSQL-default-server-port).<br />
 You now connect your application to 127.0.0.1:6666 instead of 127.0.0.1:5432, and you'll see what it is doing. <br />
@@ -28,7 +33,8 @@ Each remote client is mapped to a port of the local server therefore:
 
 Disclaimer
 ==========
-Error management exist, but is minimalist. IPV6 is not supported on the forwarding side.
+Error management exist, but is minimalist. <br />
+IPV6 is not supported on the forwarding side.
 
 Usage
 =====
