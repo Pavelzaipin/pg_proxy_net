@@ -94,7 +94,7 @@ namespace ExpressProfiler
        
 
         private const string Greykeywords = "AND,EXISTS,ALL,ANY,BETWEEN,IN,SOME,LEFT,RIGHT,JOIN,CROSS,OR,NULL,OUTER,NOT";
-        private const string Fukeywords = "LIKE,COALESCE,SESSION_USER,CONVERT,SYSTEM_USER,CURRENT_TIMESTAMP,CURRENT_USER,NULLIF,USER";
+        private const string Fukeywords = "ILIKE,LIKE,COALESCE,SESSION_USER,CONVERT,SYSTEM_USER,CURRENT_TIMESTAMP,CURRENT_USER,NULLIF,USER";
 
         private readonly System.Collections.Generic.Dictionary<string, YukonLexer.TokenKind>
             m_Words = new System.Collections.Generic
