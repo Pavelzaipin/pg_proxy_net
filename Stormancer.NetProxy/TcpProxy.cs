@@ -165,11 +165,37 @@ namespace NetProxy
             });
         }
 
+
+         protected ExpressProfiler.YukonLexer m_Lex = new ExpressProfiler.YukonLexer();
+
+         private static bool s_isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                   System.Runtime.InteropServices.OSPlatform.Windows
+               );
+
+        private static System.Collections.Generic.Dictionary<char, string> s_frontendMessageDictionary = new System.Collections.Generic.Dictionary<char, string>()
+        {
+            { 'D', "Describe" },
+            { 'S', "Sync" },
+            { 'E', "Execute" },
+            { 'P', "Parse" },
+            { 'B', "Bind" },
+            { 'C', "Close" },
+            { 'Q', "Query" },
+            { 'd', "CopyData" },
+            { 'c', "CopyDone" },
+            { 'f', "CopyFail" },
+            { 'X', "Terminate" },
+            { 'p', "Password" }
+        };
+
+
+
         private async Task CopyToAsync(Stream source, Stream destination, bool log, int bufferSize = 81920, Direction direction = Direction.Unknown, CancellationToken cancellationToken = default)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
             {
+
                 while (true)
                 {
                     int bytesRead = await source.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false);
@@ -178,28 +204,102 @@ namespace NetProxy
 
                     if (log)
                     {
+                        Netproxy.NpgsqlReadBuffer foo = new Netproxy.NpgsqlReadBuffer(buffer, bytesRead);
+
+                        byte messageCode = foo.ReadByte();
+                        char messageCodeChar = (char)messageCode;
+
+                        string eventCaption = "Unknown";
+                        if (s_frontendMessageDictionary.ContainsKey(messageCodeChar))
+                            eventCaption = s_frontendMessageDictionary[messageCodeChar];
+
+
+                        if (messageCode == Netproxy.FrontendMessageCode.Query)
+                        {
+                            // WriteBuffer.WriteByte(FrontendMessageCode.Query);
+                            // WriteBuffer.WriteInt32(
+                            // sizeof(int)  +        // Message length (including self excluding code)
+                            // queryByteLen +        // Query byte length
+                            // sizeof(byte));        // Null terminator
+                            // )
+
+                            // await WriteBuffer.WriteString(sql, queryByteLen, async, cancellationToken);
+                            // WriteBuffer.WriteByte(0);  // Null terminator
+
+                            int stringLength = foo.ReadInt32();
+                            stringLength -= sizeof(int);
+                            stringLength -= sizeof(byte);
+                            string query = foo.ReadString(stringLength);
+
+                            if (
+                                // On connection 
+                                query.IndexOf("SET DateStyle=ISO") == -1 &&
+                                query.IndexOf("SET client_min_messages=notice") == -1 &&
+                                query.IndexOf("SET bytea_output=escape") == -1 &&
+                                query.IndexOf("SELECT oid, pg_encoding_to_char(encoding) AS encoding, datlastsysoid") == -1 &&
+                                query.IndexOf("set client_encoding to 'UNICODE'") == -1 &&
+                                // Show results in pgadmin3 
+                                query.IndexOf("as typname FROM pg_type") == -1 &&
+                                query.IndexOf("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace") == -1 &&
+                                query.IndexOf("SELECT proname, pronargs, proargtypes[0] AS arg0, proargtypes[1] AS arg1, proargtypes[2] AS arg2") == -1 &&
+                                query.IndexOf("SELECT count(*) FROM pg_attribute WHERE attrelid = 'pg_catalog.pg_proc'::regclass AND attname = 'proargdefaults'") == -1 &&
+                                query.IndexOf("FROM 'autovacuum_") == -1 &&
+                                query.IndexOf("CASE WHEN typbasetype=0 THEN oid else typbasetype END AS basetype") == -1
+                            )
+                            {
+                                System.Console.ResetColor();
+                                System.Console.Write(eventCaption + ":");
+                                System.Console.Write(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
+
+                                if (!s_isWindows)
+                                    System.Console.Write(System.Environment.NewLine);
+
+                                ExpressProfiler.ConsoleOutputWriter cw = new ExpressProfiler.ConsoleOutputWriter()
+                                {
+                                    BackColor = System.Drawing.Color.White
+                                };
+
+                                if (!string.IsNullOrEmpty(query))
+                                {
+                                    // var lex = new YukonLexer(); lex.SyntaxHighlight(cw, td);
+                                    this.m_Lex.SyntaxHighlight(cw, query);
+                                    // rich.Rtf = this.m_Lex.SyntaxHighlight(rb, td);
+                                }
+
+
+                                //System.Console.WriteLine(query);
+                            }
+
+                        }
+                        else if (messageCode == Netproxy.FrontendMessageCode.Terminate)
+                        {
+                            System.Console.ResetColor();
+                            System.Console.Write(eventCaption + ":");
+                            System.Console.Write(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
+
+                            if (!s_isWindows)
+                                System.Console.Write(System.Environment.NewLine);
+                        }
+                        else
+                        {
+                            if (messageCode != '\0')
+                            {
+                                System.Console.WriteLine("Unhandled messageCode: '" + messageCodeChar.ToString(System.Globalization.CultureInfo.InvariantCulture).Replace("\0", "NULL") + "'.");
+                            }
+                        }
+
+
+                        /*
                         string? message = System.Text.Encoding.UTF8.GetString(buffer);
                         message = message.Replace("��4", "");
                         string[] statements = message.Split('\0', System.StringSplitOptions.RemoveEmptyEntries);
 
-                        if (statements.Length > 1 && "Q".Equals(statements[0]))
-                        {
-                            if (
-                                // On connection 
-                                statements[1].IndexOf("SET DateStyle=ISO") == -1 &&
-                                statements[1].IndexOf("SET client_min_messages=notice") == -1 &&
-                                statements[1].IndexOf("SET bytea_output=escape") == -1 &&
-                                statements[1].IndexOf("SELECT oid, pg_encoding_to_char(encoding) AS encoding, datlastsysoid") == -1 &&
-                                statements[1].IndexOf("set client_encoding to 'UNICODE'") == -1 &&
-                                // Show results in pgadmin3 
-                                statements[1].IndexOf("as typname FROM pg_type") == -1 &&
-                                statements[1].IndexOf("CASE WHEN typbasetype=0 THEN oid else typbasetype END AS basetype") == -1
-                            )
-                                System.Console.WriteLine(statements[1].Substring(1));
+             
                         } // End if (statements.Length > 1 && "Q".Equals(statements[0])) 
 
                         // message = message.Replace("\0", "!ARGH!");
                         // System.Console.WriteLine(foo);
+                        */
                     } // End if (log) 
 
                     LastActivity = Environment.TickCount64;
