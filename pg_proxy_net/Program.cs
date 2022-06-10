@@ -6,6 +6,28 @@ namespace NetProxy
 
     internal static class Program
     {
+        // https://stackoverflow.com/a/48274520
+        private static System.Timers.Timer ﾠ300;
+        private static bool s_showSparta = true;
+
+        private static void Sparta_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (s_showSparta)
+                System.Console.Title = "THIS IS MADNESS!!!    Madness huh?    THIS IS SPARTA!!!!!!! ";
+            else
+                System.Console.Title = "https://github.com/ststeiger/pg_proxy_net";
+
+            s_showSparta ^= true;
+        }
+
+
+        static Program()
+        {
+            ﾠ300 = new System.Timers.Timer(4000);
+            ﾠ300.AutoReset = true;
+            ﾠ300.Elapsed += new System.Timers.ElapsedEventHandler(Sparta_Elapsed!);
+            ﾠ300.Start();
+        }
 
 
         private static void Main(string[] args)

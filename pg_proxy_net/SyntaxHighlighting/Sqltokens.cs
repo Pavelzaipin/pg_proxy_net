@@ -10,7 +10,6 @@ namespace ExpressProfiler
     class Sqltokens
     {
 
-        #region Keywords
         private const string Keywords = "ADD,ALTER,AS,ASC,AUTHORIZATION,BACKUP," +
                                         "BEGIN,BREAK,BROWSE,BULK,BY,CASCADE," +
                                         "CHECK,CHECKPOINT,CLOSE,CLUSTERED,COLLATE," +
@@ -22,8 +21,8 @@ namespace ExpressProfiler
                                         "FILLFACTOR,FOR,FOREIGN,FORMSOF,FREETEXT,FREETEXTTABLE,FROM,FULL," +
                                         "FUNCTION,GOTO,GRANT,GROUP,HAVING,HOLDLOCK,IDENTITY," +
                                         "IDENTITYCOL,IDENTITY_INSERT,IF,INFLECTIONAL,INDEX,INNER,INSERT," +
-                                        "INTERSECT,INTO,IS,ISABOUT,KEY,KILL,LINENO,LOAD," +
-                                        "NATIONAL,NOCHECK,NONCLUSTERED,OF,OFF," +
+                                        "INTERSECT,INTO,IS,ISABOUT,KEY,KILL,LIMIT,LINENO,LOAD," +
+                                        "NATIONAL,NOCHECK,NONCLUSTERED,OF,OFF,OFFSET" +
                                         "OFFSETS,ON,OPEN,OPENDATASOURCE,OPENQUERY,OPENROWSET,OPENXML," +
                                         "OPTION,ORDER,OVER,PERCENT,PLAN,PRECISION," +
                                         "PRIMARY,PRINT,PROC,PROCEDURE,PUBLIC,RAISERROR,READ," +
@@ -49,10 +48,7 @@ namespace ExpressProfiler
                                         ",updlock,tablock,tablockx,paglock,readcommitted,readpast,readuncommitted,repeatableread,rowlock,serializable,xlock"
                                         + ",delay";
 
-        #endregion
-
-
-        #region Functions
+        
         private const string Functions = "@@CONNECTIONS,@@CPU_BUSY,@@CURSOR_ROWS,@@DATEFIRST,@@DBTS,@@ERROR," +
                                          "@@FETCH_STATUS,@@IDENTITY,@@IDLE,@@IO_BUSY,@@LANGID,@@LANGUAGE," +
                                          "@@LOCK_TIMEOUT,@@MAX_CONNECTIONS,@@MAX_PRECISION,@@NESTLEVEL,@@OPTIONS," +
@@ -79,20 +75,21 @@ namespace ExpressProfiler
                                          "SIGN,SIN,SOUNDEX,SPACE,SQL_VARIANT_PROPERTY,SQRT,SQUARE," +
                                          "STATS_DATE,STDEV,STDEVP,STR,STUFF,SUBSTRING,SUM,SUSER_SID,SUSER_SNAME," +
                                          "TAN,TEXTPTR,TEXTVALID,TYPEPROPERTY,UNICODE,UPPER," +
-                                         "USER_ID,USER_NAME,VAR,VARP,YEAR";
+                                         "USER_ID,USER_NAME,VAR,VARP,YEAR," +
+                                         "SUBSTR,SUBSTRING,SPLIT_PART,UNNEST,PG_GET_USERBYID,ARRAY,ARRAY_AGG,ARRAY_TO_STRING," +
+                                         "PG_AVAILABLE_EXTENSIONS,ROW_NUMBER,DENSE_RANK";
 
-        #endregion
-        #region Types
+     
         private const string Types = "bigint,binary,bit,char,character,datetime," +
                                      "dec,decimal,float,image,int," +
                                      "integer,money,nchar,ntext,nvarchar,real," +
                                      "rowversion,smalldatetime,smallint,smallmoney," +
                                      "sql_variant,sysname,text,timestamp,tinyint,uniqueidentifier," +
                                      "varbinary,varchar,NUMERIC";
-        #endregion
+       
 
-        private const string Greykeywords = "AND,EXISTS,ALL,ANY,BETWEEN,IN,SOME,JOIN,CROSS,OR,NULL,OUTER,NOT,LIKE";
-        private const string Fukeywords = "CASE,RIGHT,COALESCE,SESSION_USER,CONVERT,SYSTEM_USER,LEFT,CURRENT_TIMESTAMP,CURRENT_USER,NULLIF,USER";
+        private const string Greykeywords = "AND,EXISTS,ALL,ANY,BETWEEN,IN,SOME,LEFT,RIGHT,JOIN,CROSS,OR,NULL,OUTER,NOT";
+        private const string Fukeywords = "LIKE,CASE,COALESCE,SESSION_USER,CONVERT,SYSTEM_USER,CURRENT_TIMESTAMP,CURRENT_USER,NULLIF,USER";
 
         private readonly System.Collections.Generic.Dictionary<string, YukonLexer.TokenKind>
             m_Words = new System.Collections.Generic

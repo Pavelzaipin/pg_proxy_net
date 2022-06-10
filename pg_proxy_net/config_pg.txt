@@ -1,4 +1,20 @@
 ﻿
+dotnet publish /p:PublishProfile="Windows_X64"
+dotnet publish /p:PublishProfile="Windows_x86"
+dotnet publish /p:PublishProfile="Linux_x64"
+dotnet publish /p:PublishProfile="Linux_ARM"
+dotnet publish /p:PublishProfile="OSX_x64"
+
+
+
+dotnet publish /p:PublishProfile="Windows_X64" /p:PackAsTool=false
+dotnet publish /p:PublishProfile="Windows_x86" /p:PackAsTool=false
+dotnet publish /p:PublishProfile="Linux_x64" /p:PackAsTool=false
+dotnet publish /p:PublishProfile="Linux_ARM" /p:PackAsTool=false
+dotnet publish /p:PublishProfile="OSX_x64" /p:PackAsTool=false
+
+
+
 https://chartio.com/resources/tutorials/how-to-log-queries-in-postgresql/
 https://tableplus.com/blog/2018/10/how-to-show-queries-log-in-postgresql.html
 
