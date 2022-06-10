@@ -55,7 +55,40 @@ namespace NetProxy
                     }
                 }
 
-                System.Threading.Tasks.Task.WhenAll(tasks).Wait();
+                System.Threading.Tasks.Task.WhenAll(tasks); //.Wait();
+
+
+
+
+
+                System.Console.ResetColor();
+
+                // System.Console.WriteLine("--- Press ENTER to stop profiling --- ");
+                // System.Console.ReadLine();
+
+                // System.Console.WriteLine("--- Press any key to stop profiling --- ");
+                // System.Console.ReadKey();
+
+                System.Console.WriteLine("--- Press BACKSPACE to stop profiling --- ");
+
+                System.ConsoleKey cc = default(System.ConsoleKey);
+
+                do
+                {
+                    // THIS IS MADNESS!!!   Madness huh?   THIS IS SPARTA!!!!!!! 
+                    while (!System.Console.KeyAvailable)
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+
+                    cc = System.Console.ReadKey().Key;
+
+                    if (cc == System.ConsoleKey.C)
+                        System.Console.Clear();
+
+                    // } while (cc != System.ConsoleKey.Enter);
+                } while (cc != System.ConsoleKey.Backspace);
+
             }
             catch (System.Exception ex)
             {
