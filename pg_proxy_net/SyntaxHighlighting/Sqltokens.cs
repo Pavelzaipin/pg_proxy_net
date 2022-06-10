@@ -11,7 +11,7 @@ namespace ExpressProfiler
     {
 
         private const string Keywords = "ADD,ALTER,AS,ASC,AUTHORIZATION,BACKUP," +
-                                        "BEGIN,BREAK,BROWSE,BULK,BY,CASCADE," +
+                                        "BEGIN,BREAK,BROWSE,BULK,BY,CASCADE,CASE," +
                                         "CHECK,CHECKPOINT,CLOSE,CLUSTERED,COLLATE," +
                                         "COLUMN,COMMIT,COMPUTE,CONSTRAINT,CONTAINS,CONTAINSTABLE," +
                                         "CONTINUE,CREATE,CURRENT,CURSOR,DATABASE," +
@@ -76,10 +76,15 @@ namespace ExpressProfiler
                                          "STATS_DATE,STDEV,STDEVP,STR,STUFF,SUBSTRING,SUM,SUSER_SID,SUSER_SNAME," +
                                          "TAN,TEXTPTR,TEXTVALID,TYPEPROPERTY,UNICODE,UPPER," +
                                          "USER_ID,USER_NAME,VAR,VARP,YEAR," +
-                                         "SUBSTR,SUBSTRING,SPLIT_PART,UNNEST,PG_GET_USERBYID,ARRAY,ARRAY_AGG,ARRAY_TO_STRING," +
-                                         "PG_AVAILABLE_EXTENSIONS,ROW_NUMBER,DENSE_RANK";
+                                         "SUBSTR,SUBSTRING,SPLIT_PART,UNNEST,ARRAY,ARRAY_AGG,ARRAY_TO_STRING," +
+                                         "ROW_NUMBER,RANK,DENSE_RANK,NTILE," +
+                                         "CURRENT_SETTING,FORMAT_TYPE,HAS_DATABASE_PRIVILEGE,OBJ_DESCRIPTION,SHOBJ_DESCRIPTION," +
+                                         "PG_AVAILABLE_EXTENSIONS,PG_GET_CONSTRAINTDEF,PG_GET_EXPR,PG_GET_FUNCTION_RESULT,PG_GET_INDEXDEF,PG_GET_RULEDEF,PG_GET_TRIGGERDEF,PG_GET_USERBYID," +
+                                         "PG_IS_IN_RECOVERY,PG_CONF_LOAD_TIME,PG_ENCODING_TO_CHAR," +
+                                         "PG_IS_XLOG_REPLAY_PAUSED,PG_LAST_XACT_REPLAY_TIMESTAMP,PG_LAST_XLOG_REPLAY_LOCATION,PG_LAST_XLOG_RECEIVE_LOCATION,PG_POSTMASTER_START_TIME,PG_TABLESPACE_LOCATION,"+
+                                         "REGEXP_REPLACE,TS_TOKEN_TYPE";
 
-     
+
         private const string Types = "bigint,binary,bit,char,character,datetime," +
                                      "dec,decimal,float,image,int," +
                                      "integer,money,nchar,ntext,nvarchar,real," +
@@ -89,7 +94,7 @@ namespace ExpressProfiler
        
 
         private const string Greykeywords = "AND,EXISTS,ALL,ANY,BETWEEN,IN,SOME,LEFT,RIGHT,JOIN,CROSS,OR,NULL,OUTER,NOT";
-        private const string Fukeywords = "LIKE,CASE,COALESCE,SESSION_USER,CONVERT,SYSTEM_USER,CURRENT_TIMESTAMP,CURRENT_USER,NULLIF,USER";
+        private const string Fukeywords = "LIKE,COALESCE,SESSION_USER,CONVERT,SYSTEM_USER,CURRENT_TIMESTAMP,CURRENT_USER,NULLIF,USER";
 
         private readonly System.Collections.Generic.Dictionary<string, YukonLexer.TokenKind>
             m_Words = new System.Collections.Generic
