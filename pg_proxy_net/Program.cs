@@ -1,5 +1,7 @@
 ﻿#nullable enable
 
+using ExpressProfiler;
+
 namespace NetProxy
 {
 
@@ -31,6 +33,15 @@ namespace NetProxy
 
 
         private static void Main(string[] args)
+        {
+            StartProfiling();
+            
+            
+            // TestLexer inst = new TestLexer();
+            // inst.LexMe("SELECT 123 AS 'abc', LEFT(x, 3) FROM mytable LEFT JOIN foobar ON foobar.id = 123");
+        }
+
+        private static void StartProfiling()
         {
             try
             {
