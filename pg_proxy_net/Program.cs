@@ -30,7 +30,32 @@ namespace NetProxy
         }
 
 
+        // https://stackoverflow.com/questions/49290683/how-to-redirect-root-to-swagger-in-asp-net-core-2-x
         private static void Main(string[] args)
+        {
+            StartProxy();
+
+            // AnySQL.SqlLexer.Test();
+
+            // string x = TestLucene.CrapLord.LinuxNativeMethods.ReadLink("path");
+
+            // https://www.kernel.org/doc/Documentation/networking/proc_net_tcp.txt
+
+
+            // System.Collections.Generic.List<System.Collections.Generic.List<string>> lines = ProcFsReader.ReadProcNetTcp();
+            // ProcFsReader.Test();
+
+            // NetStat.Test();
+            // pg_proxy_net.network.LoseHelper.ListUsedTcpPorts();
+            // pg_proxy_net.network.LoseHelper.ListTcp();
+        }
+
+
+
+
+
+
+        private static void StartProxy()
         {
             try
             {
