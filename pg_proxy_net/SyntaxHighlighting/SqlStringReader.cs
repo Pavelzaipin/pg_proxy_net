@@ -3,7 +3,8 @@ namespace ExpressProfiler
 {
     
     
-    public class SqlStringReader : System.IO.TextReader
+    public class SqlStringReader 
+        : System.IO.TextReader
     {
         private string? _s;
         private int _pos;
@@ -753,5 +754,9 @@ namespace ExpressProfiler
 
             m_Token = m_Line.Substring(m_TokenPos, m_Run - m_TokenPos);
         }
+
+
     }
+
+
 }
