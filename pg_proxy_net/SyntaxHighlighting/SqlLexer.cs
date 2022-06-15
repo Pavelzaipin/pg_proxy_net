@@ -1,306 +1,27 @@
 ﻿
-namespace AnySQL
+namespace pg_proxy_net.SyntaxHighlighting.Lexer
 {
 
 
-
-    public enum SqlSyntaxTokenType
-    {
-        String,
-        DashComment,
-        SlashComment,
-        StatementSeparator,
-        QuotedIdentifier,
-        SingleArgumentOperator,
-        DoubleArgumentOperator,
-        Undefined
-    }
-
-    public enum SqlKeywordType : int
-    {
-        Reserved = 0,
-        Function = 1,
-        Operator = 2,
-        From = 3,
-        Identifier = 4,
-        String = 5,
-        Number = 6,
-        Separator = 7,
-        Comment = 8,
-        OpenBracket = 9,
-        CloseBracket = 10,
-        Unknown = 11
-    }
-
-
-    [System.Diagnostics.DebuggerDisplay("Text = {m_text}, SyntaxTokenType = {SyntaxTokenType} KeywordType = {KeywordType}")]
-    public class SqlToken
-    {
-        public SqlSyntaxTokenType SyntaxTokenType;
-        public SqlKeywordType KeywordType;
-
-
-        protected string m_text = "";
-
-
-        public SqlToken? Previous;
-        public SqlToken? Next;
-
-        public bool IsJoinStatement;
-        public bool IsPotentialJoinStatement;
-        public bool NeedsPostProcessing;
-
-
-
-
-
-
-
-
-        public SqlToken(string text, SqlSyntaxTokenType syntaxTokenType, SqlKeywordType keywordType)
-        {
-            this.NeedsPostProcessing = false;
-            this.IsJoinStatement = false;
-            this.IsPotentialJoinStatement = false;
-            this.SyntaxTokenType = syntaxTokenType;
-            this.KeywordType = keywordType;
-            this.Text = text;
-        }
-
-
-        public SqlToken(string text)
-            : this(text, SqlSyntaxTokenType.Undefined, SqlKeywordType.Unknown)
-        { }
-
-
-        public SqlToken()
-            : this("")
-        { }
-
-
-
-
-
-
-
-
-        public string HtmlText
-        {
-
-            get
-            {
-                return System.Web.HttpUtility.HtmlEncode(m_text).Replace(" ", "&nbsp;").Replace("\r\n", "\n").Replace("\n", "<br />");
-            }
-        }
-
-        public string Text
-        {
-
-            get { return m_text; }
-            set
-            {
-                this.m_text = value;
-
-                if ("(".Equals(m_text))
-                {
-                    this.KeywordType = SqlKeywordType.OpenBracket;
-                }
-                else if (")".Equals(m_text))
-                {
-                    this.KeywordType = SqlKeywordType.CloseBracket;
-
-                }
-                else if ("LEFT".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                    this.NeedsPostProcessing = true;
-                else if ("RIGHT".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                    this.NeedsPostProcessing = true;
-                else if ("INNER".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.IsPotentialJoinStatement = true;
-                    this.NeedsPostProcessing = true;
-                }
-                else if ("OUTER".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.IsPotentialJoinStatement = true;
-                    this.NeedsPostProcessing = true;
-                }
-
-                else if ("FULL".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                    this.NeedsPostProcessing = true;
-                else if ("CROSS".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                    this.NeedsPostProcessing = true;
-                else if ("NATURAL".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                    this.NeedsPostProcessing = true;
-                else if ("JOIN".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.IsJoinStatement = true;
-                    this.KeywordType = SqlKeywordType.From;
-                }
-                else if ("APPLY".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.IsJoinStatement = true;
-                    this.NeedsPostProcessing = true;
-                }
-                else if ("LATERAL".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.IsJoinStatement = true;
-                    this.KeywordType = SqlKeywordType.From;
-                }
-                else if ("NOT".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.KeywordType = SqlKeywordType.Operator;
-                    this.SyntaxTokenType = SqlSyntaxTokenType.SingleArgumentOperator;
-                }
-                else if ("AND".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.KeywordType = SqlKeywordType.Operator;
-                    this.SyntaxTokenType = SqlSyntaxTokenType.DoubleArgumentOperator;
-                }
-                else if ("OR".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.KeywordType = SqlKeywordType.Operator;
-                    this.SyntaxTokenType = SqlSyntaxTokenType.DoubleArgumentOperator;
-                }
-                else if ("ANY".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.KeywordType = SqlKeywordType.Operator;
-                    this.SyntaxTokenType = SqlSyntaxTokenType.DoubleArgumentOperator;
-                }
-                else if ("ALL".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.KeywordType = SqlKeywordType.Operator;
-                    this.SyntaxTokenType = SqlSyntaxTokenType.DoubleArgumentOperator;
-                    this.NeedsPostProcessing = true;
-                }
-                else if ("LIKE".Equals(this.m_text, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    this.KeywordType = SqlKeywordType.Operator;
-                    this.SyntaxTokenType = SqlSyntaxTokenType.DoubleArgumentOperator;
-                }
-
-
-
-            }
-        }
-
-
-
-
-        public SqlToken? NextNonSeparatorIncludingBracket()
-        {
-            SqlToken? foo = this;
-
-            while ((foo = foo.Next) != null)
-            {
-                if (
-                       (
-                        (foo.SyntaxTokenType != SqlSyntaxTokenType.StatementSeparator)
-                        || (foo.KeywordType != SqlKeywordType.OpenBracket)
-                        || (foo.KeywordType != SqlKeywordType.CloseBracket)
-                       )
-                    && (foo.SyntaxTokenType != SqlSyntaxTokenType.DashComment)
-                    && (foo.SyntaxTokenType != SqlSyntaxTokenType.SlashComment)
-                )
-                    return foo;
-            }
-
-            return foo;
-        }
-
-
-
-        public SqlToken? NextNonSeparator()
-        {
-            SqlToken? foo = this;
-
-            while ((foo = foo.Next) != null)
-            {
-                if (
-                       (foo.SyntaxTokenType != SqlSyntaxTokenType.StatementSeparator)
-                    && (foo.SyntaxTokenType != SqlSyntaxTokenType.DashComment)
-                    && (foo.SyntaxTokenType != SqlSyntaxTokenType.SlashComment)
-                )
-                    return foo;
-            }
-
-            return foo;
-        }
-
-
-        public SqlToken? PreviousNonSeparator()
-        {
-            SqlToken? foo = this;
-
-            while ((foo = foo.Previous) != null)
-            {
-                if (
-                       (foo.SyntaxTokenType != SqlSyntaxTokenType.StatementSeparator)
-                    && (foo.SyntaxTokenType != SqlSyntaxTokenType.DashComment)
-                    && (foo.SyntaxTokenType != SqlSyntaxTokenType.SlashComment)
-                )
-                    return foo;
-            }
-
-            return foo;
-        }
-
-
-    }
-
-
-    public class Helper
-    {
-
-        public static bool IsNewLine(char c)
-        {
-            if (c == '\r' || c == '\n')
-                return true;
-
-            return false;
-        }
-
-
-        public static bool IsWhiteSpace(char c)
-        {
-            if (c == ' ')
-                return true;
-
-            if (c == '\t')
-                return true;
-
-            if (c == '\r')
-                return true;
-
-            if (c == '\n')
-                return true;
-
-            if (c == '\v')
-                return true;
-
-            if (c == '\f')
-                return true;
-
-            if (c == '\u00A0') // ASCII 0xA0 (160: non-breaking space)
-                return true;
-
-            if (c == '\uFEFF') // Unicode Character 'ZERO WIDTH NO-BREAK SPACE' (U+FEFF)
-                return true;
-
-            return char.IsWhiteSpace(c);
-        }
-
-
-    }
-
-
-
-    public class SqlStringReader
+    public abstract class SqlStringReader
     {
 
         protected char[] m_charArray;
 
         protected long m_currentPosition;
         protected long m_length;
+
+
+        private class SqlStringReaderImpl
+            :SqlStringReader
+        {
+
+            public SqlStringReaderImpl(string text)
+                :base(text)
+            { }
+
+        }
+
 
 
         public static string Substitute(string text)
@@ -352,6 +73,12 @@ namespace AnySQL
             this.m_charArray = sql.ToCharArray();
             this.m_length = this.m_charArray.Length;
             this.m_currentPosition = -1;
+        }
+
+
+        ~SqlStringReader()
+        {
+            System.Array.Clear(this.m_charArray);
         }
 
 
@@ -769,35 +496,29 @@ namespace AnySQL
         }
 
 
-    }
-
-
-
-    public class SqlLexer
-    {
-
         public static void Test()
         {
 
-            SqlStringReader? x = new SqlStringReader("SELECT * FROM T_Benutzer AS foo");
-            x = new SqlStringReader("SELECT 123 AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("SELECT '123' AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("SELECT '' AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("SELECT 'd''Alambert' AS abc FROM T_Benutzer AS foo");
 
-            x = new SqlStringReader("SELECT '/*d''Alambert*/' AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("SELECT /*'d''Alambert'*/ AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("--SELECT /*'d''Alambert'*/ AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("--SELECT /*'d''Alambert'*/ AS abc FROM T_Benutzer AS foo\r\nSELECT 123 AS test");
-            x = new SqlStringReader("SELECT /*'d''Alambert'*/AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("SELECT 'd''Alambert'AS abc FROM T_Benutzer AS foo");
-            x = new SqlStringReader("SELECT 'd''Alambert'AS abc FROM T_Benutzer AS foo LEFT JOIN T_Benutzergruppen ON 1=2");
+            string sql = "SELECT * FROM T_Benutzer AS foo";
+            sql ="SELECT 123 AS abc FROM T_Benutzer AS foo";
+            sql ="SELECT '123' AS abc FROM T_Benutzer AS foo";
+            sql ="SELECT '' AS abc FROM T_Benutzer AS foo";
+            sql ="SELECT 'd''Alambert' AS abc FROM T_Benutzer AS foo";
 
-            x = new SqlStringReader("SELECT 'd''Alambert'AS abc, LEFT(abc, 5) FROM T_Benutzer AS foo LEFT JOIN T_Benutzergruppen ON 1=2");
+            sql ="SELECT '/*d''Alambert*/' AS abc FROM T_Benutzer AS foo";
+            sql ="SELECT /*'d''Alambert'*/ AS abc FROM T_Benutzer AS foo";
+            sql ="--SELECT /*'d''Alambert'*/ AS abc FROM T_Benutzer AS foo";
+            sql ="--SELECT /*'d''Alambert'*/ AS abc FROM T_Benutzer AS foo\r\nSELECT 123 AS test";
+            sql ="SELECT /*'d''Alambert'*/AS abc FROM T_Benutzer AS foo";
+            sql ="SELECT 'd''Alambert'AS abc FROM T_Benutzer AS foo";
+            sql ="SELECT 'd''Alambert'AS abc FROM T_Benutzer AS foo LEFT JOIN T_Benutzergruppen ON 1=2";
 
-            x = new SqlStringReader("SELECT ''as abc 'd''Alambert'AS abc, LTRIM(RTRIM(abc)) FROM T_Benutzer AS foo LEFT JOIN T_Benutzergruppen ON 1=2");
+            sql ="SELECT 'd''Alambert'AS abc, LEFT(abc, 5) FROM T_Benutzer AS foo LEFT JOIN T_Benutzergruppen ON 1=2";
 
-            x = new SqlStringReader(@"
+            sql ="SELECT ''as abc 'd''Alambert'AS abc, LTRIM(RTRIM(abc)) FROM T_Benutzer AS foo LEFT JOIN T_Benutzergruppen ON 1=2";
+            
+            sql = @"
 SELECT 
  123*758.13/13%5+1-7 AS expr  
 ,''as abc 'd''Alambert'AS ""abc def, []ghi"" 
@@ -813,11 +534,10 @@ SELECT
 FROM T_Benutzer AS foo 
 
 LEFT JOIN T_Benutzergruppen 
-    ON 1=2 ");
+    ON 1=2 ";
 
 
-
-            x = new SqlStringReader(@"
+            sql = @"
 
 
 IF 1=2 
@@ -875,7 +595,14 @@ CROSS JOIN LATERAL (SELECT 123 AS crossApplied) AS t9
 
 
 
-");
+";
+
+        }
+
+        public static System.Collections.Generic.List<SqlToken> Lexme(string sql)
+        {
+
+            SqlStringReader? x = new SqlStringReaderImpl(sql);
 
             System.Collections.Generic.List<SqlToken> ls = new System.Collections.Generic.List<SqlToken>();
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -1093,8 +820,8 @@ CROSS JOIN LATERAL (SELECT 123 AS crossApplied) AS t9
                             ls[i].KeywordType = SqlKeywordType.Reserved;
                         }
                     }
-                    
-                    
+
+
 
 
                 }
@@ -1109,22 +836,22 @@ CROSS JOIN LATERAL (SELECT 123 AS crossApplied) AS t9
                 , "BACKUP", "RESTORE" , "CHECKPOINT"
                 , "DATE", "TIME", "DATETIME", "TIMESTAMP","UNIQUEIDENTIFIER"
                 , "INT", "INTEGER", "ARRAY", "FLOAT", "REAL","DECIMAL"
-                , "TABLE","VIEW", "COLUMN", "TRIGGER", "FUNCTION", "PROCEDURE", "INDEX", "DOMAIN", "CONSTRAINT", "UNIQUE", "RULE" 
+                , "TABLE","VIEW", "COLUMN", "TRIGGER", "FUNCTION", "PROCEDURE", "INDEX", "DOMAIN", "CONSTRAINT", "UNIQUE", "RULE"
                 , "DECLARE", "SET", "PRINT", "READONLY","OUTPUT"
                 , "WITH", "RECURSIVE", "AS", "CONNECT", "NOCYCLE", "PRIOR", "OPTION", "MAXRECURSION", "WITHIN"
                 , "CREATE", "REPLACE", "ALTER", "DROP", "SELECT", "INSERT", "INTO", "VALUES", "MERGE", "UPDATE", "DELETE", "TRUNCATE"
-                , "EXEC", "EXECUTE", "EXISTS", "RETURNS", "BEGIN", "END", "IF", "BREAK", "CONTINUE", "GOTO", "EXIT" 
-                , "FROM", "UNION", "EXCEPT", "INTERSECT", "DISTINCT", "GROUP", "BY", "DISTRIBUTED" 
-                , "ORDER", "ASC", "DESC", "COLLATE", "LIMIT", "OFFSET", "TOP", "PERCENT" 
+                , "EXEC", "EXECUTE", "EXISTS", "RETURNS", "BEGIN", "END", "IF", "BREAK", "CONTINUE", "GOTO", "EXIT"
+                , "FROM", "UNION", "EXCEPT", "INTERSECT", "DISTINCT", "GROUP", "BY", "DISTRIBUTED"
+                , "ORDER", "ASC", "DESC", "COLLATE", "LIMIT", "OFFSET", "TOP", "PERCENT"
                 , "CASE", "WHEN", "ELSE", "ESCAPE", "OVER"
-                , "TRUE", "FALSE", "ON", "OFF", "OF" 
+                , "TRUE", "FALSE", "ON", "OFF", "OF"
                 , "GRANT", "REVOKE", "DENY" ,"STATISTICS", "WAITFOR"
-                , "FOREIGN", "KEY", "REFERENCES", "NOCHECK", "CASCADE", "DEFAULT", "PERSIST" 
+                , "FOREIGN", "KEY", "REFERENCES", "NOCHECK", "CASCADE", "DEFAULT", "PERSIST"
                 , "OPENROWSET","OPENQUERY","OPENDATASOURCE"
                 , "FILLFACTOR", "FREETEXT", "FREETEXTTABLE", "READTEXT", "WRITETEXT", "TEXTSIZE"
                 , "SEMANTICKEYPHRASETABLE", "SEMANTICSIMILARITYDETAILSTABLE", "SEMANTICSIMILARITYTABLE"
                 , "CONTAINSTABLE", "EXPLAIN", "PLAN", "TABLESAMPLE"
-                , "GO", "START" , "UNPIVOT", "NONCLUSTERED", "DBCC", "RECONFIGURE", "DUMP" 
+                , "GO", "START" , "UNPIVOT", "NONCLUSTERED", "DBCC", "RECONFIGURE", "DUMP"
             };
 
             string[] list_of_functions = new string[] {
@@ -1169,7 +896,7 @@ CROSS JOIN LATERAL (SELECT 123 AS crossApplied) AS t9
                     if (ls[i].KeywordType != SqlKeywordType.From
                         && ls[i].KeywordType != SqlKeywordType.Operator)
                     {
-                        if(reserved_words.Contains(ls[i].Text))
+                        if (reserved_words.Contains(ls[i].Text))
                             ls[i].KeywordType = SqlKeywordType.Reserved;
                         else
                             ls[i].KeywordType = SqlKeywordType.Function;
@@ -1207,6 +934,12 @@ CROSS JOIN LATERAL (SELECT 123 AS crossApplied) AS t9
 
 
 
+            return ls;
+        }
+
+        public static string LexToHtml(string t)
+        {
+            System.Collections.Generic.List<SqlToken> ls = Lexme(t);
 
             string[] colors = new string[]
             {
@@ -1252,10 +985,14 @@ CROSS JOIN LATERAL (SELECT 123 AS crossApplied) AS t9
             sbb.AppendLine(@"</body>
 </html>");
 
-            System.IO.File.WriteAllText(@"D:\mysyntax.html", sbb.ToString(), System.Text.Encoding.UTF8);
+            string s = sbb.ToString();
+            sbb.Clear();
 
-            System.Console.WriteLine(ls);
+            return s;
         }
 
+
     }
+
+
 }

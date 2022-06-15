@@ -38,7 +38,12 @@ namespace NetProxy
             // ExpressProfiler.TestLexer inst = new ExpressProfiler.TestLexer();
             // inst.LexMe("SELECT 123 AS 'abc', LEFT(x, 3) FROM mytable LEFT JOIN foobar ON foobar.id = 123");
 
-            // AnySQL.SqlLexer.Test();
+
+            // pg_proxy_net.SyntaxHighlighting.Lexer.SqlStringReader.Test();
+            // pg_proxy_net.SyntaxHighlighting.Lexer.SqlStringReader.Lexme("");
+            // pg_proxy_net.SyntaxHighlighting.Lexer.SqlStringReader.LexToHtml("");
+
+
 
             // string x = TestLucene.CrapLord.LinuxNativeMethods.ReadLink("path");
 
