@@ -115,7 +115,7 @@ namespace NetProxy
         }
 
 
-        public static bool CheckIfIgnorable(string query)
+        public static bool CanIgnore(string query)
         {
             for (int i = 0; i < s_ignoreList.Length; ++i)
             {
@@ -272,7 +272,7 @@ namespace NetProxy
                             stringLength -= sizeof(byte);
                             string query = foo.ReadString(stringLength);
 
-                            if(CheckIfIgnorable(query))
+                            if(!CanIgnore(query))
                             {
                                 System.Console.ResetColor();
                                 System.Console.Write(eventCaption + ":");
