@@ -13,6 +13,8 @@ namespace NetProxy
 {
     internal class TcpProxy : IProxy
     {
+
+
         /// <summary>
         /// Milliseconds
         /// </summary>
@@ -90,6 +92,43 @@ namespace NetProxy
         private long _totalBytesResponded;
         public long LastActivity { get; private set; } = Environment.TickCount64;
 
+
+        private static readonly string[] s_ignoreList;
+
+
+        static TcpConnection()
+        {
+            s_ignoreList = new string[] {
+                 "SET DateStyle=ISO"
+                ,"SET client_min_messages=notice"
+                ,"SET bytea_output=escape"
+                ,"SELECT oid, pg_encoding_to_char(encoding) AS encoding, datlastsysoid"
+                ,"set client_encoding to 'UNICODE'"
+                 // Show results in pgadmin3 
+                ,"as typname FROM pg_type"
+                ,"SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace"
+                ,"SELECT proname, pronargs, proargtypes[0] AS arg0, proargtypes[1] AS arg1, proargtypes[2] AS arg2"
+                ,"SELECT count(*) FROM pg_attribute WHERE attrelid = 'pg_catalog.pg_proc'::regclass AND attname = 'proargdefaults'"
+                ,"FROM 'autovacuum_"
+                ,"CASE WHEN typbasetype=0 THEN oid else typbasetype END AS basetype"
+            };
+        }
+
+
+        public static bool CheckIfIgnorable(string query)
+        {
+            for (int i = 0; i < s_ignoreList.Length; ++i)
+            {
+                if (query.IndexOf(s_ignoreList[i]) == -1)
+                    return true;
+            }
+
+            return false;
+        }
+
+
+
+
         public static async Task<TcpConnection> AcceptTcpClientAsync(TcpListener tcpListener, IPEndPoint remoteEndpoint)
         {
             TcpClient? localServerConnection = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
@@ -102,7 +141,7 @@ namespace NetProxy
             _localServerConnection = localServerConnection;
             _remoteEndpoint = remoteEndpoint;
 
-            _forwardClient = new TcpClient {NoDelay = true};
+            _forwardClient = new TcpClient { NoDelay = true };
 
             _sourceEndpoint = _localServerConnection.Client.RemoteEndPoint;
             _serverLocalEndpoint = _localServerConnection.Client.LocalEndPoint;
@@ -166,11 +205,11 @@ namespace NetProxy
         }
 
 
-         protected ExpressProfiler.YukonLexer m_Lex = new ExpressProfiler.YukonLexer();
+        protected ExpressProfiler.YukonLexer m_Lex = new ExpressProfiler.YukonLexer();
 
-         private static bool s_isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-                   System.Runtime.InteropServices.OSPlatform.Windows
-               );
+        private static bool s_isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                  System.Runtime.InteropServices.OSPlatform.Windows
+              );
 
         private static System.Collections.Generic.Dictionary<char, string> s_frontendMessageDictionary = new System.Collections.Generic.Dictionary<char, string>()
         {
@@ -190,6 +229,8 @@ namespace NetProxy
 
 
 
+
+
         private async Task CopyToAsync(Stream source, Stream destination, bool log, int bufferSize = 81920, Direction direction = Direction.Unknown, CancellationToken cancellationToken = default)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
@@ -199,7 +240,7 @@ namespace NetProxy
                 while (true)
                 {
                     int bytesRead = await source.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false);
-                    if (bytesRead == 0) 
+                    if (bytesRead == 0)
                         break;
 
                     if (log)
@@ -231,21 +272,7 @@ namespace NetProxy
                             stringLength -= sizeof(byte);
                             string query = foo.ReadString(stringLength);
 
-                            if (
-                                // On connection 
-                                query.IndexOf("SET DateStyle=ISO") == -1 &&
-                                query.IndexOf("SET client_min_messages=notice") == -1 &&
-                                query.IndexOf("SET bytea_output=escape") == -1 &&
-                                query.IndexOf("SELECT oid, pg_encoding_to_char(encoding) AS encoding, datlastsysoid") == -1 &&
-                                query.IndexOf("set client_encoding to 'UNICODE'") == -1 &&
-                                // Show results in pgadmin3 
-                                query.IndexOf("as typname FROM pg_type") == -1 &&
-                                query.IndexOf("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace") == -1 &&
-                                query.IndexOf("SELECT proname, pronargs, proargtypes[0] AS arg0, proargtypes[1] AS arg1, proargtypes[2] AS arg2") == -1 &&
-                                query.IndexOf("SELECT count(*) FROM pg_attribute WHERE attrelid = 'pg_catalog.pg_proc'::regclass AND attname = 'proargdefaults'") == -1 &&
-                                query.IndexOf("FROM 'autovacuum_") == -1 &&
-                                query.IndexOf("CASE WHEN typbasetype=0 THEN oid else typbasetype END AS basetype") == -1
-                            )
+                            if(CheckIfIgnorable(query))
                             {
                                 System.Console.ResetColor();
                                 System.Console.Write(eventCaption + ":");
