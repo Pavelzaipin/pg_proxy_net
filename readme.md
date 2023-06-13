@@ -13,6 +13,12 @@ It will not work with TLS/encryption.
 
 Netproxy is a simple ipv6/ipv4 UDP & TCP proxy based on .NET 5.0, tested on *win10-x64* and *ubuntu.16.20-x64*.
 
+
+[![PG Profiled][1]][1]
+
+
+
+
 Why? 
 ====
 To create an analogue to SQL-Server profiler without having to enable logging on the server. <br />
@@ -63,3 +69,4 @@ Configuration
 - *forwardIp* : The ip the traffic will be forwarded to.
 - *forwardPort* : The port the traffic will be forwarded to.
 
+  [1]: https://i.stack.imgur.com/03u7q.png
