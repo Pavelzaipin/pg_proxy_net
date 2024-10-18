@@ -1,8 +1,8 @@
 ﻿{
   "pgsql": {
-    "localPort": 6666,
+    "localPort": 5434,
     "protocol": "tcp",
     "forwardIp": "127.0.0.1",
-    "forwardPort": 5432
+    "forwardPort": 5433
   }
 }
