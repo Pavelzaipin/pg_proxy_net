@@ -95,6 +95,8 @@ namespace NetProxy
 
         private static readonly string[] s_ignoreList;
 
+        private static List<string> ignoreList_new;
+
 
         static TcpConnection()
         {
@@ -112,6 +114,30 @@ namespace NetProxy
                 ,"FROM 'autovacuum_"
                 ,"CASE WHEN typbasetype=0 THEN oid else typbasetype END AS basetype"
             };
+
+            ignoreList_new = new List<string>() {
+                 "SET DateStyle=ISO"
+                ,"SET client_min_messages=notice"
+                ,"SET bytea_output=escape"
+                ,"SELECT oid, pg_encoding_to_char(encoding) AS encoding, datlastsysoid"
+                ,"set client_encoding to 'UNICODE'"
+                 // Show results in pgadmin3 
+                ,"as typname FROM pg_type"
+                ,"SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace"
+                ,"SELECT proname, pronargs, proargtypes[0] AS arg0, proargtypes[1] AS arg1, proargtypes[2] AS arg2"
+                ,"SELECT count(*) FROM pg_attribute WHERE attrelid = 'pg_catalog.pg_proc'::regclass AND attname = 'proargdefaults'"
+                ,"FROM 'autovacuum_"
+                ,"CASE WHEN typbasetype=0 THEN oid else typbasetype END AS basetype"
+                ,"SELECT NOW()"
+                ,"SELECT VERSION()"
+                ,"SET statement_timeout TO 30000"
+                ,"SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - pg_postmaster_start_time())::INTEGER"
+                ,"SHOW ssl"
+                ,"SELECT table_name FROM information_schema.tables WHERE table_schema='information_schema'"
+                ,"DISCARD ALL"
+                ,"BEGIN"
+                ,"COMMIT"
+            };
         }
 
 
@@ -126,7 +152,22 @@ namespace NetProxy
             return false;
         }
 
+        //TODO: Поправить
+        public static bool IgnoreQuery(string query)
+        {
+            bool ignore = ignoreList_new.Contains(query);
+            
+            if(query.Contains("BEGIN"))
+            {
+                ignore = true;
+            }
+            if(query.Contains("COMMIT"))
+            {
+                ignore = true;
+            }
 
+            return ignore;
+        }
 
 
         public static async Task<TcpConnection> AcceptTcpClientAsync(TcpListener tcpListener, IPEndPoint remoteEndpoint)
@@ -228,10 +269,7 @@ namespace NetProxy
         };
 
 
-
-
-
-        private async Task CopyToAsync(Stream source, Stream destination, bool log, int bufferSize = 81920, Direction direction = Direction.Unknown, CancellationToken cancellationToken = default)
+        private async Task CopyToAsync(Stream source, Stream destination, bool log, int bufferSize = 181920, Direction direction = Direction.Unknown, CancellationToken cancellationToken = default)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
@@ -248,6 +286,8 @@ namespace NetProxy
                         Netproxy.NpgsqlReadBuffer foo = new Netproxy.NpgsqlReadBuffer(buffer, bytesRead);
 
                         byte messageCode = foo.ReadByte();
+
+                        
                         char messageCodeChar = (char)messageCode;
 
                         string eventCaption = "Unknown";
@@ -272,7 +312,7 @@ namespace NetProxy
                             stringLength -= sizeof(byte);
                             string query = foo.ReadString(stringLength);
 
-                            if(!CanIgnore(query))
+                            if (!IgnoreQuery(query))
                             {
                                 System.Console.ResetColor();
                                 System.Console.Write(eventCaption + ":");
@@ -294,7 +334,7 @@ namespace NetProxy
                                 }
 
 
-                                //System.Console.WriteLine(query);
+                                System.Console.WriteLine(query);
                             }
 
                         }

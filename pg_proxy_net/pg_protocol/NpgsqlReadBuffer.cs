@@ -210,7 +210,8 @@ namespace Netproxy
         public string ReadString(int byteLen)
         {
             System.Diagnostics.Debug.Assert(byteLen <= ReadBytesLeft);
-            string? result = this.TextEncoding.GetString(Buffer!, ReadPosition, byteLen);
+            var test = Buffer.LongLength;
+            string? result = this.TextEncoding.GetString(Buffer!, ReadPosition, ReadBytesLeft);
             ReadPosition += byteLen;
             return result;
         }
