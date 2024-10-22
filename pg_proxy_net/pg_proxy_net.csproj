@@ -5,7 +5,7 @@
     <PackAsTool>true</PackAsTool>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <ToolCommandName>netproxy</ToolCommandName>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <Version>0.2</Version>

@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using pg_proxy_net;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -271,6 +272,8 @@ namespace NetProxy
 
         private async Task CopyToAsync(Stream source, Stream destination, bool log, int bufferSize = 181920, Direction direction = Direction.Unknown, CancellationToken cancellationToken = default)
         {
+            
+            
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
             {
@@ -314,38 +317,41 @@ namespace NetProxy
 
                             if (!IgnoreQuery(query))
                             {
-                                System.Console.ResetColor();
-                                System.Console.Write(eventCaption + ":");
-                                System.Console.Write(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
+                                //System.Console.ResetColor();
+                                //System.Console.Write(eventCaption + ":");
+                                //System.Console.Write(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
+                                //
+                                //if (!s_isWindows)
+                                //    System.Console.Write(System.Environment.NewLine);
+                                //
+                                //ExpressProfiler.ConsoleOutputWriter cw = new ExpressProfiler.ConsoleOutputWriter()
+                                //{
+                                //    BackColor = System.Drawing.Color.White
+                                //};
+                                //
+                                //if (!string.IsNullOrEmpty(query))
+                                //{
+                                //    // var lex = new YukonLexer(); lex.SyntaxHighlight(cw, td);
+                                //    this.m_Lex.SyntaxHighlight(cw, query);
+                                //    // rich.Rtf = this.m_Lex.SyntaxHighlight(rb, td);
+                                //}
 
-                                if (!s_isWindows)
-                                    System.Console.Write(System.Environment.NewLine);
-
-                                ExpressProfiler.ConsoleOutputWriter cw = new ExpressProfiler.ConsoleOutputWriter()
-                                {
-                                    BackColor = System.Drawing.Color.White
-                                };
-
-                                if (!string.IsNullOrEmpty(query))
-                                {
-                                    // var lex = new YukonLexer(); lex.SyntaxHighlight(cw, td);
-                                    this.m_Lex.SyntaxHighlight(cw, query);
-                                    // rich.Rtf = this.m_Lex.SyntaxHighlight(rb, td);
-                                }
 
 
-                                System.Console.WriteLine(query);
+                                Queries.GetInstance.AddQuery(query);
+
+                                //System.Console.WriteLine(query);
                             }
 
                         }
                         else if (messageCode == Netproxy.FrontendMessageCode.Terminate)
                         {
-                            System.Console.ResetColor();
-                            System.Console.Write(eventCaption + ":");
-                            System.Console.Write(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
+                            //System.Console.ResetColor();
+                            //System.Console.Write(eventCaption + ":");
+                            //System.Console.Write(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
 
-                            if (!s_isWindows)
-                                System.Console.Write(System.Environment.NewLine);
+                            //if (!s_isWindows)
+                            //    System.Console.Write(System.Environment.NewLine);
                         }
                         else
                         {
